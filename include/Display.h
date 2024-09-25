@@ -6,6 +6,5 @@ class Display {
         uint64_t bits;
     public:
         Display();
-        void toggleBits(uint64_t bits);
-        void render(sf::RenderWindow* window);
+        void render(sf::RenderWindow* window, uint64_t bits);
 };

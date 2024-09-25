@@ -3,16 +3,13 @@
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Vector2.hpp>
+#include <cstdint>
 
 Display::Display() {
     bits = 0;
 }
 
-void Display::toggleBits(uint64_t bits) {
-    this->bits ^= bits;
-}
-
-void Display::render(sf::RenderWindow* window) {
+void Display::render(sf::RenderWindow* window, uint64_t bits) {
     window->clear();
     for (int i = 0; i < 8; i++) {
         for (int ii = 0; ii < 8; ii++) {

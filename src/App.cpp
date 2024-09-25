@@ -1,10 +1,15 @@
 #include "App.h"
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Vector2.hpp>
+#include <SFML/Window/Clipboard.hpp>
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Keyboard.hpp>
+#include <SFML/Window/Mouse.hpp>
 #include <SFML/Window/VideoMode.hpp>
+#include <cstdint>
 #include <iostream>
+#include <limits>
+#include <sstream>
 
 App::App() {
     window = new sf::RenderWindow(sf::VideoMode(800, 800), "Visualizer");
@@ -27,21 +32,45 @@ void App::mainLoop() {
                 return;
             } else if (event.type == sf::Event::EventType::KeyPressed) {
                 if (event.key.code == sf::Keyboard::Key::Enter) {
-                    std::cout << "Decimal: " << std::dec << bits << std::endl;
-                    std::cout << "Hex: " << std::hex << bits << std::endl;
-                    std::cout << std::endl;
+                    std::stringstream string;
+                    string << std::hex << bits;
+                    sf::Clipboard::setString(string.str());
+                } else if (event.key.code == sf::Keyboard::Key::Num1) {
+                    bits = std::numeric_limits<uint64_t>::max();
+                } else if (event.key.code == sf::Keyboard::Key::Num0) {
+                    bits = std::numeric_limits<uint64_t>::min();
+                } else if (event.key.code == sf::Keyboard::Key::Tilde) {
+                    bits = ~bits;
                 }
             }
         }
-        display->render(window);
+        updateSquares();
+        display->render(window, bits);
     }
 }
 
-void App::onClick() {
+uint64_t App::getMouseSquare() {
     sf::Vector2i pos = sf::Mouse::getPosition(*window);
-    int row = pos.y / 100;
-    int col = pos.x / 100;
-    uint64_t toggle = 1ULL << (63 - (row * 8 + col));
-    bits ^= toggle;
-    display->toggleBits(toggle);
+    int row = std::min(std::max(pos.y, 0), 800) / 100;
+    int col = std::min(std::max(pos.x, 0), 800) / 100;
+    return 1ULL << (63 - (row * 8 + col));
+}
+
+void App::onClick() {
+    if (getMouseSquare() & bits) {
+        mode = MODE::REMOVE;
+    } else {
+        mode = MODE::ADD;
+    }
+}
+
+void App::updateSquares() {
+    if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+
+        uint64_t toggle = getMouseSquare();
+
+        if (((bits & toggle) && (mode == MODE::REMOVE)) || ((!(bits & toggle)) && (mode == MODE::ADD))) {
+            bits ^= toggle;
+        }
+    }
 }
