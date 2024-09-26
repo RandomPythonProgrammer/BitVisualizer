@@ -5,7 +5,7 @@
 SpriteSheet::SpriteSheet(std::filesystem::path path, int rows, int cols) {
     this->rows = rows;
     this->cols = cols;
-    texture.loadFromFile(path);
+    texture.loadFromFile(path.string());
 }
 
 sf::Sprite SpriteSheet::getSprite(int index) {
