@@ -6,15 +6,21 @@
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/Mouse.hpp>
 #include <SFML/Window/VideoMode.hpp>
+#include <algorithm>
 #include <cstdint>
+#include <cstdio>
+#include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <limits>
 #include <sstream>
 
+
 App::App() {
     window = new sf::RenderWindow(sf::VideoMode(800, 800), "Visualizer");
-    display = new Display();
-    bits = 0;
+    display = new Display(window);
+    switchLayer(Piece::BIT);
+    bits.fill(0);
 }
 
 App::~App() {
@@ -33,19 +39,38 @@ void App::mainLoop() {
             } else if (event.type == sf::Event::EventType::KeyPressed) {
                 if (event.key.code == sf::Keyboard::Key::Enter) {
                     std::stringstream string;
-                    string << std::hex << bits;
+                    string << std::hex << bits[piece];
                     sf::Clipboard::setString(string.str());
                 } else if (event.key.code == sf::Keyboard::Key::Num1) {
-                    bits = std::numeric_limits<uint64_t>::max();
+                    bits[piece] = std::numeric_limits<uint64_t>::max();
                 } else if (event.key.code == sf::Keyboard::Key::Num0) {
-                    bits = std::numeric_limits<uint64_t>::min();
+                    bits[piece] = std::numeric_limits<uint64_t>::min();
                 } else if (event.key.code == sf::Keyboard::Key::Tilde) {
-                    bits = ~bits;
+                    bits[piece] = ~bits[piece];
+                } else if (event.key.code == sf::Keyboard::Key::S) {
+                    save("board");
+                } else if (event.key.code == sf::Keyboard::Key::L) {
+                    load("board");
+                }
+
+                if (keymap.find(event.key.code) != keymap.end()) {
+                    Piece p = (Piece) keymap[event.key.code];
+                    if (!sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) {
+                        p = (Piece) std::min((int) Piece::BIT, p + 6);
+                    }
+                    switchLayer(p);
                 }
             }
         }
         updateSquares();
-        display->render(window, bits);
+
+        window->clear();
+        display->drawBackground(bits[BIT]);
+        for (int i = 0; i < BIT; i++) {
+            display->drawLayer(bits[i], i);
+        }
+        display->drawText();
+        window->display();
     }
 }
 
@@ -57,7 +82,7 @@ uint64_t App::getMouseSquare() {
 }
 
 void App::onClick() {
-    if (getMouseSquare() & bits) {
+    if (getMouseSquare() & bits[piece]) {
         mode = MODE::REMOVE;
     } else {
         mode = MODE::ADD;
@@ -69,8 +94,38 @@ void App::updateSquares() {
 
         uint64_t toggle = getMouseSquare();
 
-        if (((bits & toggle) && (mode == MODE::REMOVE)) || ((!(bits & toggle)) && (mode == MODE::ADD))) {
-            bits ^= toggle;
+        if (((bits[piece] & toggle) && (mode == MODE::REMOVE)) || ((!(bits[piece] & toggle)) && (mode == MODE::ADD))) {
+            bits[piece] ^= toggle;
+            if (piece != Piece::BIT) {
+                for (int i = Piece::KING; i < Piece::BIT; i++) {
+                    if (i != piece) {
+                        bits[i] &= ~toggle;
+                    }
+                }
+            }
+        }
+    }
+}
+
+void App::switchLayer(Piece layer) {
+    piece = layer;
+    display->setText(nameMap[piece]);
+}
+
+void App::save(std::filesystem::path path) {
+    std::ofstream stream(path);
+    if (stream.is_open()) {
+        for (int i = 0; i < bits.size(); i++) {
+            stream.write(reinterpret_cast<char*>(&bits[i]), sizeof(uint64_t));
+        }
+    }
+}
+
+void App::load(std::filesystem::path path) {
+    std::ifstream stream(path);
+    if (stream.is_open()) {
+        for (int i = 0; i < bits.size(); i++) {
+            stream.read(reinterpret_cast<char*>(&bits[i]), sizeof(uint64_t));
         }
     }
 }

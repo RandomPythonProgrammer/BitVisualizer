@@ -13,8 +13,9 @@ FetchContent_Declare(SFML
     SYSTEM)
 FetchContent_MakeAvailable(SFML)
 
+file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
 include_directories(include)
-add_executable(main src/main.cpp src/App.cpp src/Display.cpp)
+add_executable(main src/main.cpp src/App.cpp src/Display.cpp src/SpriteSheet.cpp)
 target_link_libraries(main PRIVATE sfml-graphics)
 target_compile_features(main PRIVATE cxx_std_17)
 
