@@ -10,7 +10,15 @@ Click and/or drag on the squares to toggle bits on or off. The white is `0` and 
 - `1` fills the bitboard with `1`s
 - `0` fills the bitboard with `0`s
 - `~` inverts the bits on the bitboard
-- Use chess algebra letters to select different layers, `esc` for bits and hold shift for white pieces
+- Use chess algebra letters to select different layers
+    - `k` for king
+    - `q` for queen
+    - `n` for knight
+    - `b` for bishop
+    - `r` for rook
+    - `p` for pawn
+    - `esc` for bits
+    - hold `shift` while selecting for white pieces
 - `s` save the board
 - `l` load the board
 
