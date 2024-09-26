@@ -42,8 +42,16 @@ void App::mainLoop() {
                     string << std::hex << bits[piece];
                     sf::Clipboard::setString(string.str());
                 } else if (event.key.code == sf::Keyboard::Key::Num1) {
-                    bits[piece] = std::numeric_limits<uint64_t>::max();
+                    uint64_t empty = getEmpty();
+                    if (!empty) {
+                        empty = std::numeric_limits<uint64_t>::max();
+                    }
+                    bits[piece] |= getEmpty();
+                    clearOthers(empty);
                 } else if (event.key.code == sf::Keyboard::Key::Num0) {
+                    if (!bits[piece]) {
+                        clearOthers();
+                    }
                     bits[piece] = std::numeric_limits<uint64_t>::min();
                 } else if (event.key.code == sf::Keyboard::Key::Tilde) {
                     bits[piece] = ~bits[piece];
@@ -97,11 +105,7 @@ void App::updateSquares() {
         if (((bits[piece] & toggle) && (mode == MODE::REMOVE)) || ((!(bits[piece] & toggle)) && (mode == MODE::ADD))) {
             bits[piece] ^= toggle;
             if (piece != Piece::BIT) {
-                for (int i = Piece::KING; i < Piece::BIT; i++) {
-                    if (i != piece) {
-                        bits[i] &= ~toggle;
-                    }
-                }
+                clearOthers(toggle);
             }
         }
     }
@@ -128,4 +132,20 @@ void App::load(std::filesystem::path path) {
             stream.read(reinterpret_cast<char*>(&bits[i]), sizeof(uint64_t));
         }
     }
+}
+
+void App::clearOthers(uint64_t mask) {
+    for (int i = Piece::king; i < Piece::BIT; i++) {
+        if (i != piece) {
+            bits[i] &= ~mask;
+        }
+    }
+}
+
+uint64_t App::getEmpty() {
+    uint64_t mask = 0;
+    for (int i = Piece::king; i < Piece::BIT; i++) {
+        mask |= bits[i];
+    }
+    return ~mask;
 }

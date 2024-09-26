@@ -3,6 +3,8 @@
 #include <array>
 #include <SFML/Graphics.hpp>
 #include <SFML/System/Vector2.hpp>
+#include <cstdint>
+#include <limits>
 
 enum class MODE {
     ADD,
@@ -24,7 +26,7 @@ static std::map<sf::Keyboard::Key, Piece> keymap{
     {sf::Keyboard::N, Piece::KNIGHT},
     {sf::Keyboard::R, Piece::ROOK},
     {sf::Keyboard::P, Piece::PAWN},
-    {sf::Keyboard::P, Piece::BIT}
+    {sf::Keyboard::Escape, Piece::BIT}
 };
 
 class App {
@@ -46,4 +48,6 @@ private:
         void switchLayer(Piece layer);
         void load(std::filesystem::path path);
         void save(std::filesystem::path path);
+        void clearOthers(uint64_t mask=std::numeric_limits<uint64_t>::max());
+        uint64_t getEmpty();
 };
