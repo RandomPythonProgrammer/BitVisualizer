@@ -13,7 +13,7 @@
 Display::Display(sf::RenderTarget* target) {
     this->target = target;
     std::filesystem::path path = std::filesystem::current_path();
-    path = path / ".." / "assets";
+    path = path / "assets";
     loader = new SpriteSheet(path /  "pieces.bmp", 2, 6);
     bits = 0;
     font.loadFromFile((path / "OpenSans-Regular.ttf").string());
