@@ -26,7 +26,7 @@ Display::~Display() {
 void Display::drawBackground(uint64_t bits) {
     for (int i = 0; i < 8; i++) {
         for (int ii = 0; ii < 8; ii++) {
-            uint64_t mask = 1ULL << (63 - (i * 8 + ii));
+            uint64_t mask = 1ULL << (63 - (i * 8 + (7-ii)));
             sf::Color color = (bits & mask) ? sf::Color::Red: sf::Color::White;
             sf::RectangleShape rect;
             rect.setSize(sf::Vector2f(100 ,100));
@@ -43,7 +43,7 @@ void Display::drawBackground(uint64_t bits) {
 void Display::drawLayer(uint64_t bits, int index) {
     for (int i = 0; i < 8; i++) {
         for (int ii = 0; ii < 8; ii++) {
-            uint64_t mask = 1ULL << (63 - (i * 8 + ii));
+            uint64_t mask = 1ULL << (63 - (i * 8 + (7-ii)));
 
             if (mask & bits) {
                 sf::Sprite sprite = loader->getSprite(index);

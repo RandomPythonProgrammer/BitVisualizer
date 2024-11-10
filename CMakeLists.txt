@@ -13,10 +13,17 @@ FetchContent_Declare(SFML
     SYSTEM)
 FetchContent_MakeAvailable(SFML)
 
+FetchContent_Declare(core
+    GIT_REPOSITORY https://github.com/Project-Code-Chess-Engine/core.git
+    GIT_TAG Ryan
+)
+FetchContent_MakeAvailable(core)
+
 file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
 include_directories(include)
 add_executable(main src/main.cpp src/App.cpp src/Display.cpp src/SpriteSheet.cpp)
 target_link_libraries(main PRIVATE sfml-graphics)
+target_link_libraries(main PRIVATE core)
 target_compile_features(main PRIVATE cxx_std_17)
 
 if(WIN32)

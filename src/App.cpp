@@ -19,7 +19,7 @@
 App::App() {
     window = new sf::RenderWindow(sf::VideoMode(800, 800), "Visualizer");
     display = new Display(window);
-    switchLayer(Piece::BIT);
+    switchLayer(PieceType::Piece::BIT);
     bits.fill(0);
 }
 
@@ -32,49 +32,14 @@ void App::mainLoop() {
     while (window->isOpen()) {
         sf::Event event;
         while (window->pollEvent(event)) {
-            if (event.type == sf::Event::EventType::MouseButtonPressed) {
-                onClick();
-            } else if (event.type == sf::Event::EventType::Closed) {
+            if (event.type == sf::Event::EventType::Closed) {
                 return;
-            } else if (event.type == sf::Event::EventType::KeyPressed) {
-                if (event.key.code == sf::Keyboard::Key::Enter) {
-                    std::stringstream string;
-                    string << std::hex << bits[piece];
-                    sf::Clipboard::setString(string.str());
-                } else if (event.key.code == sf::Keyboard::Key::Num1) {
-                    uint64_t empty = getEmpty();
-                    if (!empty) {
-                        empty = std::numeric_limits<uint64_t>::max();
-                    }
-                    bits[piece] |= getEmpty();
-                    clearOthers(empty);
-                } else if (event.key.code == sf::Keyboard::Key::Num0) {
-                    if (!bits[piece]) {
-                        clearOthers();
-                    }
-                    bits[piece] = std::numeric_limits<uint64_t>::min();
-                } else if (event.key.code == sf::Keyboard::Key::Tilde) {
-                    bits[piece] = ~bits[piece];
-                } else if (event.key.code == sf::Keyboard::Key::S) {
-                    save("board");
-                } else if (event.key.code == sf::Keyboard::Key::L) {
-                    load("board");
-                }
-
-                if (keymap.find(event.key.code) != keymap.end()) {
-                    Piece p = (Piece) keymap[event.key.code];
-                    if (!sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) {
-                        p = (Piece) std::min((int) Piece::BIT, p + 6);
-                    }
-                    switchLayer(p);
-                }
             }
         }
-        updateSquares();
 
         window->clear();
-        display->drawBackground(bits[BIT]);
-        for (int i = 0; i < BIT; i++) {
+        display->drawBackground(bits[PieceType::Piece::BIT]);
+        for (int i = 0; i < PieceType::Piece::BIT; i++) {
             display->drawLayer(bits[i], i);
         }
         display->drawText();
@@ -104,14 +69,14 @@ void App::updateSquares() {
 
         if (((bits[piece] & toggle) && (mode == MODE::REMOVE)) || ((!(bits[piece] & toggle)) && (mode == MODE::ADD))) {
             bits[piece] ^= toggle;
-            if (piece != Piece::BIT) {
+            if (piece != PieceType::Piece::BIT) {
                 clearOthers(toggle);
             }
         }
     }
 }
 
-void App::switchLayer(Piece layer) {
+void App::switchLayer(PieceType::Piece layer) {
     piece = layer;
     display->setText(nameMap[piece]);
 }
@@ -135,7 +100,7 @@ void App::load(std::filesystem::path path) {
 }
 
 void App::clearOthers(uint64_t mask) {
-    for (int i = Piece::king; i < Piece::BIT; i++) {
+    for (int i = PieceType::Piece::king; i < PieceType::Piece::BIT; i++) {
         if (i != piece) {
             bits[i] &= ~mask;
         }
@@ -144,7 +109,7 @@ void App::clearOthers(uint64_t mask) {
 
 uint64_t App::getEmpty() {
     uint64_t mask = 0;
-    for (int i = Piece::king; i < Piece::BIT; i++) {
+    for (int i = PieceType::Piece::king; i < PieceType::Piece::BIT; i++) {
         mask |= bits[i];
     }
     return ~mask;
